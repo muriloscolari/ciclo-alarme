@@ -228,6 +228,7 @@ fun CalculatorScreen(
             items(uiState.options) { option ->
                 SleepOptionCard(
                     option = option,
+                    mode = uiState.selectedMode,
                     onClick = { viewModel.onOptionClicked(option) }
                 )
             }

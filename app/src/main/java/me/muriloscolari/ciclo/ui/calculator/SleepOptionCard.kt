@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.chrisbanes.haze.HazeState
 import me.muriloscolari.ciclo.R
+import me.muriloscolari.ciclo.domain.SleepMode
 import me.muriloscolari.ciclo.domain.SleepOption
 import me.muriloscolari.ciclo.ui.designsystem.GlassBorder
 import me.muriloscolari.ciclo.ui.designsystem.GlassFill
@@ -44,6 +45,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun SleepOptionCard(
     option: SleepOption,
+    mode: SleepMode = SleepMode.NOW,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -57,7 +59,10 @@ fun SleepOptionCard(
     )
 
     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
-    val timeDisplay = option.wakeTime.format(timeFormatter)
+    // No modo "Acordar às", o card exibe o horário de deitar (bedTime).
+    // Nos modos "Dormir agora" e "Vou dormir às", o card exibe o horário de acordar (wakeTime).
+    val displayTime = if (mode == SleepMode.WAKE_AT) option.bedTime else option.wakeTime
+    val timeDisplay = displayTime.format(timeFormatter)
 
     val hours = option.sleepDuration.toHours()
     val minutes = option.sleepDuration.toMinutes() % 60

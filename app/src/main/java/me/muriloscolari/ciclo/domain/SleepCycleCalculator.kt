@@ -88,7 +88,7 @@ object SleepCycleCalculator {
         now: LocalDateTime,
         settings: SleepSettings
     ): WakeAtResult {
-        val standardCycles = (settings.minCycles..settings.maxCycles)
+        val standardCycles = (settings.maxCycles downTo settings.minCycles)
             .filter { it * settings.cycleMinutes <= settings.maxSleepMinutes }
 
         val cleanWakeTime = wakeTime.withSecond(0).withNano(0)
