@@ -14,10 +14,11 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import me.muriloscolari.ciclo.alarm.NativeAlarmScheduler
-import me.muriloscolari.ciclo.alarm.NativeAlarmScheduler.AlarmResult
+import me.muriloscolari.ciclo.alarm.AlarmScheduleResult
+import me.muriloscolari.ciclo.alarm.CicloAlarmManager
 import me.muriloscolari.ciclo.data.history.AlarmHistoryEntity
 import me.muriloscolari.ciclo.data.history.HistoryRepository
+import me.muriloscolari.ciclo.data.settings.AlarmEngine
 import me.muriloscolari.ciclo.data.settings.SettingsRepository
 import me.muriloscolari.ciclo.data.settings.UserSettings
 import me.muriloscolari.ciclo.domain.SleepCycleCalculator
@@ -40,6 +41,7 @@ data class CalculatorUiState(
     val selectedOptionForConfirmation: SleepOption? = null,
     val duplicateWarningText: String? = null,
     val isSimpleAlarmForConfirmation: Boolean = false,
+    val showEngineChoiceDialog: Boolean = false,
     val userSettings: UserSettings = UserSettings()
 )
 
@@ -51,7 +53,7 @@ sealed interface CalculatorUiEvent {
 class CalculatorViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val historyRepository: HistoryRepository,
-    private val alarmScheduler: NativeAlarmScheduler,
+    private val cicloAlarmManager: CicloAlarmManager,
     private val clock: Clock
 ) : ViewModel() {
 
@@ -157,11 +159,13 @@ class CalculatorViewModel @Inject constructor(
                 if (diffMinutes < 60) "${diffMinutes} min" else "${diffMinutes / 60} h"
             }
 
+            val hasChosen = _uiState.value.userSettings.hasChosenEngine
             _uiState.update {
                 it.copy(
                     selectedOptionForConfirmation = option,
                     duplicateWarningText = warning,
-                    isSimpleAlarmForConfirmation = false
+                    isSimpleAlarmForConfirmation = false,
+                    showEngineChoiceDialog = !hasChosen
                 )
             }
         }
@@ -184,14 +188,27 @@ class CalculatorViewModel @Inject constructor(
                 isAvailable = true
             )
 
+            val hasChosen = _uiState.value.userSettings.hasChosenEngine
             _uiState.update {
                 it.copy(
                     selectedOptionForConfirmation = fakeOption,
                     duplicateWarningText = warning,
-                    isSimpleAlarmForConfirmation = true
+                    isSimpleAlarmForConfirmation = true,
+                    showEngineChoiceDialog = !hasChosen
                 )
             }
         }
+    }
+
+    fun chooseEngine(engine: AlarmEngine) {
+        viewModelScope.launch {
+            settingsRepository.updateAlarmEngine(engine)
+            _uiState.update { it.copy(showEngineChoiceDialog = false) }
+        }
+    }
+
+    fun dismissEngineChoice() {
+        _uiState.update { it.copy(showEngineChoiceDialog = false) }
     }
 
     fun dismissConfirmation() {
@@ -199,7 +216,8 @@ class CalculatorViewModel @Inject constructor(
             it.copy(
                 selectedOptionForConfirmation = null,
                 duplicateWarningText = null,
-                isSimpleAlarmForConfirmation = false
+                isSimpleAlarmForConfirmation = false,
+                showEngineChoiceDialog = false
             )
         }
     }
@@ -218,42 +236,45 @@ class CalculatorViewModel @Inject constructor(
         val wakeHour = option.wakeTime.hour
         val wakeMinute = option.wakeTime.minute
         val label = if (isSimple) simpleLabel else String.format(labelFormat, option.cycles)
+        val triggerMillis = option.wakeTime.atZone(clock.zone).toInstant().toEpochMilli()
 
-        val result = alarmScheduler.setAlarm(
+        val result = cicloAlarmManager.scheduleAlarm(
             hour = wakeHour,
             minute = wakeMinute,
+            triggerAtMillis = triggerMillis,
             label = label,
-            skipUi = settings.skipUi,
-            vibrate = settings.vibrate
+            cycles = option.cycles,
+            isSimple = isSimple,
+            settings = settings
         )
 
         dismissConfirmation()
 
         viewModelScope.launch {
             when (result) {
-                is AlarmResult.Sent -> {
+                is AlarmScheduleResult.Scheduled -> {
                     // Salva no histórico do Room
                     historyRepository.recordAlarm(
                         AlarmHistoryEntity(
                             createdAtMillis = System.currentTimeMillis(),
                             mode = if (isSimple) "SIMPLE" else _uiState.value.selectedMode.name,
                             bedTimeMillis = option.bedTime.atZone(clock.zone).toInstant().toEpochMilli(),
-                            wakeTimeMillis = option.wakeTime.atZone(clock.zone).toInstant().toEpochMilli(),
+                            wakeTimeMillis = triggerMillis,
                             wakeHour = wakeHour,
                             wakeMinute = wakeMinute,
                             cycles = option.cycles,
                             cycleMinutes = settings.sleepSettings.cycleMinutes,
                             fallAsleepMinutes = settings.sleepSettings.fallAsleepMinutes,
                             wasRecommended = option.isRecommended,
-                            clockPackage = alarmScheduler.resolvedClockPackage()
+                            clockPackage = cicloAlarmManager.resolvedClockPackage()
                         )
                     )
                     _events.emit(CalculatorUiEvent.ShowSnackbar(successMessage))
                 }
-                is AlarmResult.NoClockApp -> {
+                is AlarmScheduleResult.NoClockApp -> {
                     _events.emit(CalculatorUiEvent.ShowSnackbar(noClockMessage))
                 }
-                is AlarmResult.Failed -> {
+                is AlarmScheduleResult.Failed -> {
                     _events.emit(
                         CalculatorUiEvent.ShowSnackbar(
                             String.format(failedFormat, result.error.localizedMessage ?: "")

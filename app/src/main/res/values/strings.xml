@@ -100,4 +100,54 @@
     <!-- Diálogo Seletor de Hora -->
     <string name="time_picker_title">Escolha o horário</string>
     <string name="time_picker_confirm">Confirmar</string>
+
+    <!-- Alarme Próprio do Ciclo (Tela de Alarme, Notificação e Ações) -->
+    <string name="alarm_ringing_title">Hora de acordar</string>
+    <string name="alarm_sunrise_title">O dia está amanhecendo…</string>
+    <string name="alarm_sunrise_subtitle">Seu alarme tocará às %1$s</string>
+    <string name="alarm_swipe_to_dismiss">Deslize para cima para desligar</string>
+    <string name="alarm_snooze_format">Soneca (%1$d min)</string>
+    <string name="alarm_dismissed_feedback">Alarme desligado. Bom dia!</string>
+    <string name="alarm_snoozed_feedback">Soneca ativada para daqui a %1$d min.</string>
+    <string name="notification_channel_alarm_name">Alarmes do Ciclo</string>
+    <string name="notification_channel_alarm_desc">Notificações do alarme e simulador de amanhecer</string>
+    <string name="alarm_ringing_notification_text">O alarme está tocando</string>
+    <string name="action_dismiss_alarm">Desligar</string>
+    <string name="action_snooze_alarm">Soneca</string>
+
+    <!-- Teste de 10 Segundos -->
+    <string name="test_alarm_button">Testar alarme em 10 segundos</string>
+    <string name="test_alarm_scheduled_feedback">Teste agendado! Bloqueie a tela do celular agora.</string>
+    <string name="test_alarm_dialog_title">Testar alarme do Ciclo</string>
+    <string name="test_alarm_dialog_message">O alarme tocará em 10 segundos. Para testar a confiabilidade, bloqueie a tela do seu celular agora.</string>
+
+    <!-- Escolha Inicial de Mecanismo de Alarme -->
+    <string name="first_run_engine_dialog_title">Como deseja despertar?</string>
+    <string name="first_run_engine_dialog_message">O Ciclo oferece duas formas de alarme:\n\n• Alarme Próprio do Ciclo (Recomendado): Não acumula alarmes no aplicativo de relógio do celular, inclui simulador de amanhecer que acende a tela suavemente e volume crescente.\n\n• Relógio Nativo: Envia o alarme para o aplicativo padrão do sistema (como o Relógio da Xiaomi).</string>
+    <string name="first_run_engine_option_internal">Usar Alarme Próprio</string>
+    <string name="first_run_engine_option_native">Usar Relógio Nativo</string>
+
+    <!-- Ajustes do Alarme Próprio -->
+    <string name="settings_section_internal_alarm">Alarme Próprio do Ciclo</string>
+    <string name="settings_alarm_engine_label">Mecanismo de alarme</string>
+    <string name="settings_engine_internal">Alarme Próprio (auto-limpante)</string>
+    <string name="settings_engine_native">Relógio Nativo do celular</string>
+    <string name="settings_gentle_wake_label">Despertar suave (volume crescente)</string>
+    <string name="settings_gentle_wake_desc">O som começa em 10%% e aumenta suavemente por 30 segundos.</string>
+    <string name="settings_sunrise_label">Simulador de Amanhecer (Sunrise)</string>
+    <string name="settings_sunrise_desc">Acende o fundo da tela gradativamente com luz quente antes do alarme tocar, estimulando o despertar natural.</string>
+    <string name="settings_sunrise_lead_label">Tempo de amanhecer antes do toque</string>
+    <string name="settings_snooze_duration_label">Duração da soneca</string>
+    <string name="settings_ringtone_label">Toque do alarme</string>
+    <string name="settings_ringtone_default">Padrão do sistema</string>
+    <string name="settings_ringtone_custom">Toque personalizado</string>
+
+    <!-- Diagnóstico Xiaomi / HyperOS -->
+    <string name="settings_xiaomi_card_title">Confiabilidade no Xiaomi / HyperOS</string>
+    <string name="settings_xiaomi_card_desc">Para garantir que o alarme toque sem falhas com a tela bloqueada há horas, confira as 3 calibrações abaixo:</string>
+    <string name="settings_xiaomi_step_autostart">1. Início Automático</string>
+    <string name="settings_xiaomi_step_battery">2. Bateria Sem Restrições</string>
+    <string name="settings_xiaomi_step_lockscreen">3. Exibir na Tela de Bloqueio</string>
+    <string name="action_open_setting">Configurar</string>
+    <string name="action_ok">OK</string>
 </resources>

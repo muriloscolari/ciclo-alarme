@@ -23,7 +23,8 @@ fun GlassSurface(
     shape: Shape = RoundedCornerShape(24.dp),
     hazeState: HazeState? = null,
     backgroundColor: Color = GlassFill,
-    borderStroke: BorderStroke? = BorderStroke(1.dp, GlassBorder),
+    borderStroke: BorderStroke? = null,
+    borderColor: Color? = null,
     borderBrush: Brush? = null,
     borderWidth: Dp = 1.dp,
     onClick: (() -> Unit)? = null,
@@ -47,10 +48,17 @@ fun GlassSurface(
         )
     }
 
+    val effectiveBorderStroke = when {
+        borderColor != null -> BorderStroke(borderWidth, borderColor)
+        borderStroke != null -> borderStroke
+        borderBrush != null -> null
+        else -> BorderStroke(borderWidth, GlassBorder)
+    }
+
     if (borderBrush != null) {
         boxModifier = boxModifier.border(borderWidth, borderBrush, shape)
-    } else if (borderStroke != null) {
-        boxModifier = boxModifier.border(borderStroke, shape)
+    } else if (effectiveBorderStroke != null) {
+        boxModifier = boxModifier.border(effectiveBorderStroke, shape)
     }
 
     if (onClick != null) {

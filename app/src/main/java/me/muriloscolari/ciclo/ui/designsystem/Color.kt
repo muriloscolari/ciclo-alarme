@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 val DarkBackground = Color(0xFF0A0A12)
+val DarkBackgroundCard = Color(0xFF141420)
 val DarkSurface = Color(0xFF141420)
 val DarkSurfaceElevated = Color(0xFF1E1E2E)
 

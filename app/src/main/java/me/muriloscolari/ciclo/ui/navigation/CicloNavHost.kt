@@ -1,5 +1,6 @@
 package me.muriloscolari.ciclo.ui.navigation
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.Box
@@ -31,6 +32,7 @@ import me.muriloscolari.ciclo.ui.history.HistoryViewModel
 import me.muriloscolari.ciclo.ui.settings.SettingsScreen
 import me.muriloscolari.ciclo.ui.settings.SettingsViewModel
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun CicloNavHost(
     modifier: Modifier = Modifier,

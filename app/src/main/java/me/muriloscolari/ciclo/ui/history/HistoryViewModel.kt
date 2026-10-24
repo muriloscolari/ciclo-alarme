@@ -13,13 +13,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import me.muriloscolari.ciclo.alarm.NativeAlarmScheduler
-import me.muriloscolari.ciclo.alarm.NativeAlarmScheduler.AlarmResult
+import kotlinx.coroutines.flow.first
+import me.muriloscolari.ciclo.alarm.AlarmScheduleResult
+import me.muriloscolari.ciclo.alarm.CicloAlarmManager
 import me.muriloscolari.ciclo.data.history.AlarmHistoryEntity
 import me.muriloscolari.ciclo.data.history.HistoryRepository
 import me.muriloscolari.ciclo.data.settings.SettingsRepository
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -42,7 +44,7 @@ sealed interface HistoryUiEvent {
 class HistoryViewModel @Inject constructor(
     private val historyRepository: HistoryRepository,
     private val settingsRepository: SettingsRepository,
-    private val alarmScheduler: NativeAlarmScheduler
+    private val cicloAlarmManager: CicloAlarmManager
 ) : ViewModel() {
 
     private val _events = MutableSharedFlow<HistoryUiEvent>()
@@ -78,7 +80,7 @@ class HistoryViewModel @Inject constructor(
         )
 
     fun openNativeClock(): Boolean {
-        return alarmScheduler.openClockAlarms()
+        return cicloAlarmManager.openNativeClock()
     }
 
     fun promptClearHistory() {
@@ -131,29 +133,41 @@ class HistoryViewModel @Inject constructor(
                 String.format(labelFormat, entry.cycles)
             }
 
-            val result = alarmScheduler.setAlarm(
+            val settings = settingsRepository.settingsFlow.first()
+            val zone = ZoneId.systemDefault()
+            val now = LocalDateTime.now(zone)
+            var nextWake = now.withHour(entry.wakeHour).withMinute(entry.wakeMinute).withSecond(0).withNano(0)
+            if (!nextWake.isAfter(now)) {
+                nextWake = nextWake.plusDays(1)
+            }
+            val triggerMillis = nextWake.atZone(zone).toInstant().toEpochMilli()
+
+            val result = cicloAlarmManager.scheduleAlarm(
                 hour = entry.wakeHour,
                 minute = entry.wakeMinute,
+                triggerAtMillis = triggerMillis,
                 label = label,
-                skipUi = true,
-                vibrate = true
+                cycles = entry.cycles,
+                isSimple = entry.mode == "SIMPLE",
+                settings = settings
             )
 
             when (result) {
-                is AlarmResult.Sent -> {
+                is AlarmScheduleResult.Scheduled -> {
                     // Atualiza o registro adicionando novo evento no histórico
                     historyRepository.recordAlarm(
                         entry.copy(
                             id = 0,
-                            createdAtMillis = System.currentTimeMillis()
+                            createdAtMillis = System.currentTimeMillis(),
+                            wakeTimeMillis = triggerMillis
                         )
                     )
                     _events.emit(HistoryUiEvent.ShowSnackbar(successMsg))
                 }
-                is AlarmResult.NoClockApp -> {
+                is AlarmScheduleResult.NoClockApp -> {
                     _events.emit(HistoryUiEvent.ShowSnackbar(noClockMsg))
                 }
-                is AlarmResult.Failed -> {
+                is AlarmScheduleResult.Failed -> {
                     _events.emit(
                         HistoryUiEvent.ShowSnackbar(
                             String.format(failedFormat, result.error.localizedMessage ?: "")

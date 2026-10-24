@@ -27,8 +27,20 @@ data class UserSettings(
     val themeMode: ThemeMode = ThemeMode.DARK,
     val blurEffects: Boolean = true,
     val useDynamicColors: Boolean = false,
-    val is24HourFormat: Boolean = true
+    val is24HourFormat: Boolean = true,
+    val alarmEngine: AlarmEngine = AlarmEngine.INTERNAL,
+    val hasChosenEngine: Boolean = false,
+    val snoozeDurationMinutes: Int = 10,
+    val gentleWakeEnabled: Boolean = true,
+    val sunriseEnabled: Boolean = true,
+    val sunriseLeadTimeMinutes: Int = 5,
+    val customRingtoneUri: String? = null
 )
+
+enum class AlarmEngine {
+    INTERNAL,
+    NATIVE
+}
 
 enum class ThemeMode {
     SYSTEM,
@@ -53,6 +65,13 @@ class SettingsRepository @Inject constructor(
         val BLUR_EFFECTS = booleanPreferencesKey("blur_effects")
         val DYNAMIC_COLORS = booleanPreferencesKey("dynamic_colors")
         val IS_24_HOUR = booleanPreferencesKey("is_24_hour")
+        val ALARM_ENGINE = stringPreferencesKey("alarm_engine")
+        val HAS_CHOSEN_ENGINE = booleanPreferencesKey("has_chosen_engine")
+        val SNOOZE_DURATION_MINUTES = intPreferencesKey("snooze_duration_minutes")
+        val GENTLE_WAKE_ENABLED = booleanPreferencesKey("gentle_wake_enabled")
+        val SUNRISE_ENABLED = booleanPreferencesKey("sunrise_enabled")
+        val SUNRISE_LEAD_TIME_MINUTES = intPreferencesKey("sunrise_lead_time_minutes")
+        val CUSTOM_RINGTONE_URI = stringPreferencesKey("custom_ringtone_uri")
     }
 
     val settingsFlow: Flow<UserSettings> = context.dataStore.data
@@ -81,6 +100,15 @@ class SettingsRepository @Inject constructor(
             val dynamicColors = prefs[Keys.DYNAMIC_COLORS] ?: false
             val is24Hour = prefs[Keys.IS_24_HOUR] ?: true
 
+            val alarmEngineString = prefs[Keys.ALARM_ENGINE] ?: AlarmEngine.INTERNAL.name
+            val alarmEngine = runCatching { AlarmEngine.valueOf(alarmEngineString) }.getOrDefault(AlarmEngine.INTERNAL)
+            val hasChosenEngine = prefs[Keys.HAS_CHOSEN_ENGINE] ?: false
+            val snoozeDuration = prefs[Keys.SNOOZE_DURATION_MINUTES] ?: 10
+            val gentleWake = prefs[Keys.GENTLE_WAKE_ENABLED] ?: true
+            val sunrise = prefs[Keys.SUNRISE_ENABLED] ?: true
+            val sunriseLeadTime = prefs[Keys.SUNRISE_LEAD_TIME_MINUTES] ?: 5
+            val customRingtone = prefs[Keys.CUSTOM_RINGTONE_URI]
+
             UserSettings(
                 sleepSettings = SleepSettings(
                     cycleMinutes = cycleMinutes.coerceIn(90, 120),
@@ -95,7 +123,14 @@ class SettingsRepository @Inject constructor(
                 themeMode = themeMode,
                 blurEffects = blurEffects,
                 useDynamicColors = dynamicColors,
-                is24HourFormat = is24Hour
+                is24HourFormat = is24Hour,
+                alarmEngine = alarmEngine,
+                hasChosenEngine = hasChosenEngine,
+                snoozeDurationMinutes = snoozeDuration.coerceIn(5, 30),
+                gentleWakeEnabled = gentleWake,
+                sunriseEnabled = sunrise,
+                sunriseLeadTimeMinutes = sunriseLeadTime.coerceIn(1, 30),
+                customRingtoneUri = customRingtone
             )
         }
 
@@ -133,6 +168,43 @@ class SettingsRepository @Inject constructor(
 
     suspend fun update24HourFormat(is24Hour: Boolean) {
         context.dataStore.edit { it[Keys.IS_24_HOUR] = is24Hour }
+    }
+
+    suspend fun updateAlarmEngine(engine: AlarmEngine) {
+        context.dataStore.edit {
+            it[Keys.ALARM_ENGINE] = engine.name
+            it[Keys.HAS_CHOSEN_ENGINE] = true
+        }
+    }
+
+    suspend fun setHasChosenEngine(hasChosen: Boolean) {
+        context.dataStore.edit { it[Keys.HAS_CHOSEN_ENGINE] = hasChosen }
+    }
+
+    suspend fun updateSnoozeDuration(minutes: Int) {
+        context.dataStore.edit { it[Keys.SNOOZE_DURATION_MINUTES] = minutes.coerceIn(5, 30) }
+    }
+
+    suspend fun updateGentleWake(enabled: Boolean) {
+        context.dataStore.edit { it[Keys.GENTLE_WAKE_ENABLED] = enabled }
+    }
+
+    suspend fun updateSunrise(enabled: Boolean) {
+        context.dataStore.edit { it[Keys.SUNRISE_ENABLED] = enabled }
+    }
+
+    suspend fun updateSunriseLeadTime(minutes: Int) {
+        context.dataStore.edit { it[Keys.SUNRISE_LEAD_TIME_MINUTES] = minutes.coerceIn(1, 30) }
+    }
+
+    suspend fun updateCustomRingtone(uri: String?) {
+        context.dataStore.edit {
+            if (uri != null) {
+                it[Keys.CUSTOM_RINGTONE_URI] = uri
+            } else {
+                it.remove(Keys.CUSTOM_RINGTONE_URI)
+            }
+        }
     }
 
     suspend fun resetToDefaults() {

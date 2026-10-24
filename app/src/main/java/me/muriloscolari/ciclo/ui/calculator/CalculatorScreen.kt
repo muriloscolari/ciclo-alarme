@@ -44,9 +44,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import dev.chrisbanes.haze.HazeState
 import me.muriloscolari.ciclo.R
+import me.muriloscolari.ciclo.data.settings.AlarmEngine
 import me.muriloscolari.ciclo.domain.SleepMode
+import me.muriloscolari.ciclo.ui.designsystem.DarkBackgroundCard
 import me.muriloscolari.ciclo.ui.designsystem.GlassBorder
 import me.muriloscolari.ciclo.ui.designsystem.GlassFill
 import me.muriloscolari.ciclo.ui.designsystem.GlassSurface
@@ -323,6 +327,48 @@ fun CalculatorScreen(
             },
             onDismiss = { showTimePicker = false },
             is24Hour = uiState.userSettings.is24HourFormat
+        )
+    }
+
+    // Diálogo de Escolha Inicial de Mecanismo de Alarme
+    if (uiState.showEngineChoiceDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissEngineChoice() },
+            title = {
+                Text(
+                    text = stringResource(R.string.first_run_engine_dialog_title),
+                    style = MaterialTheme.typography.titleLarge
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.first_run_engine_dialog_message),
+                    style = MaterialTheme.typography.bodyMedium.copy(color = TextSecondary)
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { viewModel.chooseEngine(AlarmEngine.INTERNAL) },
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryLavender)
+                ) {
+                    Text(
+                        text = stringResource(R.string.first_run_engine_option_internal),
+                        color = Color.Black
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { viewModel.chooseEngine(AlarmEngine.NATIVE) }
+                ) {
+                    Text(
+                        text = stringResource(R.string.first_run_engine_option_native),
+                        color = PrimaryLavender
+                    )
+                }
+            },
+            containerColor = DarkBackgroundCard,
+            shape = RoundedCornerShape(24.dp)
         )
     }
 }
