@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import me.muriloscolari.ciclo.alarm.CicloAlarmManager
 import me.muriloscolari.ciclo.data.alarm.ActiveAlarmEntity
 import me.muriloscolari.ciclo.data.alarm.ActiveAlarmRepository
+import me.muriloscolari.ciclo.data.settings.SettingsRepository
 import javax.inject.Inject
 
 sealed interface ArmedAlarmsUiEvent {
@@ -22,6 +23,7 @@ sealed interface ArmedAlarmsUiEvent {
 @HiltViewModel
 class ArmedAlarmsViewModel @Inject constructor(
     private val activeAlarmRepository: ActiveAlarmRepository,
+    private val settingsRepository: SettingsRepository,
     private val cicloAlarmManager: CicloAlarmManager
 ) : ViewModel() {
 
@@ -48,6 +50,7 @@ class ArmedAlarmsViewModel @Inject constructor(
                 cicloAlarmManager.cancelInternalAlarm()
             }
             activeAlarmRepository.removeActiveAlarm(alarm.id)
+            settingsRepository.clearActiveAlarm()
             _events.emit(ArmedAlarmsUiEvent.ShowSnackbar(feedbackMessage))
         }
     }

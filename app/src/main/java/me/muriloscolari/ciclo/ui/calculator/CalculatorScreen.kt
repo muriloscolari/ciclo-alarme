@@ -215,13 +215,13 @@ fun CalculatorScreen(
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             // Card de Destaque: Alarme Armado (se houver alarme ativo no sistema ou no Ciclo)
-            val activeAlarm = uiState.userSettings.activeAlarm
+            val activeAlarm = uiState.activeAlarms.firstOrNull()
             if (activeAlarm != null && activeAlarm.triggerTimeMillis > System.currentTimeMillis() - 3600000L) {
                 item {
                     val disarmFeedback = stringResource(R.string.feedback_alarm_disarmed)
                     ActiveAlarmCard(
-                        activeAlarm = activeAlarm,
-                        onDisarm = { viewModel.disarmActiveAlarm(null, disarmFeedback) },
+                        alarm = activeAlarm,
+                        onDisarm = { viewModel.disarmActiveAlarm(activeAlarm.id, disarmFeedback) },
                         onOpenSystemClock = { viewModel.openSystemClock() },
                         modifier = Modifier.padding(bottom = 6.dp)
                     )
@@ -248,10 +248,7 @@ fun CalculatorScreen(
                     armed.wakeHour == option.wakeTime.hour &&
                     armed.wakeMinute == option.wakeTime.minute &&
                     armed.cycles == option.cycles
-                } || (activeAlarm != null &&
-                    activeAlarm.wakeHour == option.wakeTime.hour &&
-                    activeAlarm.wakeMinute == option.wakeTime.minute &&
-                    activeAlarm.cycles == option.cycles)
+                }
 
                 SleepOptionCard(
                     option = option,
@@ -267,7 +264,7 @@ fun CalculatorScreen(
                     val wakeStr = uiState.chosenWakeTime.format(timeFormatter)
                     val isSimpleArmed = uiState.activeAlarms.any {
                         it.isSimple && it.wakeHour == uiState.chosenWakeTime.hour && it.wakeMinute == uiState.chosenWakeTime.minute
-                    } || (activeAlarm != null && activeAlarm.isSimple && activeAlarm.wakeHour == uiState.chosenWakeTime.hour && activeAlarm.wakeMinute == uiState.chosenWakeTime.minute)
+                    }
 
                     Spacer(modifier = Modifier.height(6.dp))
                     Button(

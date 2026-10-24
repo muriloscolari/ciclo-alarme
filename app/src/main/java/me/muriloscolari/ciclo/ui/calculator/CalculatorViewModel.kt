@@ -103,6 +103,9 @@ class CalculatorViewModel @Inject constructor(
         viewModelScope.launch {
             activeAlarmRepository.activeAlarmsFlow.collect { alarms ->
                 _uiState.update { it.copy(activeAlarms = alarms) }
+                if (alarms.isEmpty()) {
+                    settingsRepository.clearActiveAlarm()
+                }
             }
         }
     }
