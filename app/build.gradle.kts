@@ -36,8 +36,9 @@ val gitCommitCount = runCatching {
     process.inputStream.bufferedReader().readText().trim().toInt()
 }.getOrDefault(1)
 
-val computedVersionCode = if (System.getenv("GITHUB_RUN_NUMBER") != null) runNumber else (100 + gitCommitCount)
-val computedVersionName = "1.0.$computedVersionCode"
+// Base 10000 para garantir que o versionCode seja estritamente crescente e nunca cause downgrade
+val computedVersionCode = 10000 + (if (System.getenv("GITHUB_RUN_NUMBER") != null) runNumber else gitCommitCount)
+val computedVersionName = if (System.getenv("GITHUB_RUN_NUMBER") != null) "1.0.$runNumber" else "1.0.$gitCommitCount"
 
 android {
     namespace = "me.muriloscolari.ciclo"
