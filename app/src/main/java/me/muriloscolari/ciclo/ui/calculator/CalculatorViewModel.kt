@@ -16,8 +16,11 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import me.muriloscolari.ciclo.alarm.AlarmScheduleResult
 import me.muriloscolari.ciclo.alarm.CicloAlarmManager
+import me.muriloscolari.ciclo.data.alarm.ActiveAlarmEntity
+import me.muriloscolari.ciclo.data.alarm.ActiveAlarmRepository
 import me.muriloscolari.ciclo.data.history.AlarmHistoryEntity
 import me.muriloscolari.ciclo.data.history.HistoryRepository
+import me.muriloscolari.ciclo.data.settings.ActiveAlarmState
 import me.muriloscolari.ciclo.data.settings.AlarmEngine
 import me.muriloscolari.ciclo.data.settings.SettingsRepository
 import me.muriloscolari.ciclo.data.settings.UserSettings
@@ -42,7 +45,8 @@ data class CalculatorUiState(
     val duplicateWarningText: String? = null,
     val isSimpleAlarmForConfirmation: Boolean = false,
     val showEngineChoiceDialog: Boolean = false,
-    val userSettings: UserSettings = UserSettings()
+    val userSettings: UserSettings = UserSettings(),
+    val activeAlarms: List<ActiveAlarmEntity> = emptyList()
 )
 
 sealed interface CalculatorUiEvent {
@@ -53,6 +57,7 @@ sealed interface CalculatorUiEvent {
 class CalculatorViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val historyRepository: HistoryRepository,
+    private val activeAlarmRepository: ActiveAlarmRepository,
     private val cicloAlarmManager: CicloAlarmManager,
     private val clock: Clock
 ) : ViewModel() {
@@ -91,6 +96,13 @@ class CalculatorViewModel @Inject constructor(
                 Triple(settings, now, state)
             }.collect { (settings, now, state) ->
                 recalculateOptions(settings, now, state.selectedMode, state.chosenBedTime, state.chosenWakeTime)
+            }
+        }
+
+        // Observa alarmes ativos do banco de dados Room
+        viewModelScope.launch {
+            activeAlarmRepository.activeAlarmsFlow.collect { alarms ->
+                _uiState.update { it.copy(activeAlarms = alarms) }
             }
         }
     }
@@ -269,6 +281,38 @@ class CalculatorViewModel @Inject constructor(
                             clockPackage = cicloAlarmManager.resolvedClockPackage()
                         )
                     )
+
+                    // Registra o Alarme Armado ativo para exibição visual clara na UI
+                    val activeState = ActiveAlarmState(
+                        triggerTimeMillis = triggerMillis,
+                        wakeHour = wakeHour,
+                        wakeMinute = wakeMinute,
+                        label = label,
+                        cycles = option.cycles,
+                        isSimple = isSimple,
+                        engine = settings.alarmEngine,
+                        clockPackage = if (settings.alarmEngine == AlarmEngine.NATIVE) cicloAlarmManager.resolvedClockPackage() else null,
+                        sunriseEnabled = settings.alarmEngine == AlarmEngine.INTERNAL && settings.sunriseEnabled,
+                        sunriseLeadMinutes = settings.sunriseLeadTimeMinutes
+                    )
+                    settingsRepository.setActiveAlarm(activeState)
+
+                    // Salva no banco de dados Room de alarmes ativos
+                    activeAlarmRepository.recordActiveAlarm(
+                        ActiveAlarmEntity(
+                            triggerTimeMillis = triggerMillis,
+                            wakeHour = wakeHour,
+                            wakeMinute = wakeMinute,
+                            label = label,
+                            cycles = option.cycles,
+                            isSimple = isSimple,
+                            engine = settings.alarmEngine.name,
+                            clockPackage = if (settings.alarmEngine == AlarmEngine.NATIVE) cicloAlarmManager.resolvedClockPackage() else null,
+                            sunriseEnabled = settings.alarmEngine == AlarmEngine.INTERNAL && settings.sunriseEnabled,
+                            sunriseLeadMinutes = settings.sunriseLeadTimeMinutes
+                        )
+                    )
+
                     _events.emit(CalculatorUiEvent.ShowSnackbar(successMessage))
                 }
                 is AlarmScheduleResult.NoClockApp -> {
@@ -283,5 +327,26 @@ class CalculatorViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun disarmActiveAlarm(alarmId: Long? = null, feedbackMessage: String) {
+        viewModelScope.launch {
+            val currentActive = _uiState.value.userSettings.activeAlarm
+            if (currentActive != null && currentActive.engine == AlarmEngine.INTERNAL) {
+                cicloAlarmManager.cancelInternalAlarm()
+            }
+            settingsRepository.clearActiveAlarm()
+
+            if (alarmId != null) {
+                activeAlarmRepository.removeActiveAlarm(alarmId)
+            } else {
+                activeAlarmRepository.clearAll()
+            }
+            _events.emit(CalculatorUiEvent.ShowSnackbar(feedbackMessage))
+        }
+    }
+
+    fun openSystemClock(): Boolean {
+        return cicloAlarmManager.openNativeClock()
     }
 }

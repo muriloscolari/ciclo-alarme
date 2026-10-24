@@ -4,6 +4,7 @@
 
     <!-- Navegação -->
     <string name="nav_calculate">Calcular</string>
+    <string name="nav_alarms">Alarmes</string>
     <string name="nav_history">Histórico</string>
     <string name="nav_settings">Ajustes</string>
 
@@ -148,6 +149,24 @@
     <string name="settings_xiaomi_step_autostart">1. Início Automático</string>
     <string name="settings_xiaomi_step_battery">2. Bateria Sem Restrições</string>
     <string name="settings_xiaomi_step_lockscreen">3. Exibir na Tela de Bloqueio</string>
+    <!-- Alarme Armado (Destaque e Intuitividade) -->
+    <string name="armed_alarms_title">Alarmes Armados</string>
+    <string name="armed_alarms_empty_title">Nenhum alarme armado</string>
+    <string name="armed_alarms_empty_subtitle">Quando você definir um alarme inteligente, ele aparecerá aqui com contagem regressiva e controle de desarmamento.</string>
+    <string name="armed_alarm_title">Alarme Armado</string>
+    <string name="armed_alarm_countdown_hours_minutes">Toca em %1$dh%2$02d</string>
+    <string name="armed_alarm_countdown_only_minutes">Toca em %1$d min</string>
+    <string name="armed_alarm_countdown_soon">Toca em instantes</string>
+    <string name="armed_badge_internal">🌙 Alarme Próprio do Ciclo</string>
+    <string name="armed_badge_internal_desc">Auto-limpante · Desperta pelo Ciclo</string>
+    <string name="armed_badge_native">📱 Relógio do Sistema</string>
+    <string name="armed_badge_native_desc">Agendado no app de relógio do celular</string>
+    <string name="armed_sunrise_info">🌅 Amanhecer às %1$s</string>
+    <string name="action_disarm_alarm">Desarmar alarme</string>
+    <string name="action_open_system_clock">Abrir Relógio</string>
+    <string name="feedback_alarm_disarmed">Alarme desarmado com sucesso.</string>
+    <string name="badge_option_armed">✓ Armado</string>
+
     <string name="action_open_setting">Configurar</string>
     <string name="action_ok">OK</string>
 </resources>

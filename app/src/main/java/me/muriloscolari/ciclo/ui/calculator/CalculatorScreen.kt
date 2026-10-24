@@ -214,6 +214,20 @@ fun CalculatorScreen(
             contentPadding = PaddingValues(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 120.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            // Card de Destaque: Alarme Armado (se houver alarme ativo no sistema ou no Ciclo)
+            val activeAlarm = uiState.userSettings.activeAlarm
+            if (activeAlarm != null && activeAlarm.triggerTimeMillis > System.currentTimeMillis() - 3600000L) {
+                item {
+                    val disarmFeedback = stringResource(R.string.feedback_alarm_disarmed)
+                    ActiveAlarmCard(
+                        activeAlarm = activeAlarm,
+                        onDisarm = { viewModel.disarmActiveAlarm(null, disarmFeedback) },
+                        onOpenSystemClock = { viewModel.openSystemClock() },
+                        modifier = Modifier.padding(bottom = 6.dp)
+                    )
+                }
+            }
+
             item {
                 Text(
                     text = if (uiState.selectedMode == SleepMode.WAKE_AT) {
@@ -230,9 +244,19 @@ fun CalculatorScreen(
             }
 
             items(uiState.options) { option ->
+                val isArmed = uiState.activeAlarms.any { armed ->
+                    armed.wakeHour == option.wakeTime.hour &&
+                    armed.wakeMinute == option.wakeTime.minute &&
+                    armed.cycles == option.cycles
+                } || (activeAlarm != null &&
+                    activeAlarm.wakeHour == option.wakeTime.hour &&
+                    activeAlarm.wakeMinute == option.wakeTime.minute &&
+                    activeAlarm.cycles == option.cycles)
+
                 SleepOptionCard(
                     option = option,
                     mode = uiState.selectedMode,
+                    isArmed = isArmed,
                     onClick = { viewModel.onOptionClicked(option) }
                 )
             }
@@ -241,6 +265,10 @@ fun CalculatorScreen(
             if (uiState.selectedMode == SleepMode.WAKE_AT) {
                 item {
                     val wakeStr = uiState.chosenWakeTime.format(timeFormatter)
+                    val isSimpleArmed = uiState.activeAlarms.any {
+                        it.isSimple && it.wakeHour == uiState.chosenWakeTime.hour && it.wakeMinute == uiState.chosenWakeTime.minute
+                    } || (activeAlarm != null && activeAlarm.isSimple && activeAlarm.wakeHour == uiState.chosenWakeTime.hour && activeAlarm.wakeMinute == uiState.chosenWakeTime.minute)
+
                     Spacer(modifier = Modifier.height(6.dp))
                     Button(
                         onClick = {
@@ -251,16 +279,37 @@ fun CalculatorScreen(
                         },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = GlassFill,
+                            containerColor = if (isSimpleArmed) Color(0x2234D399) else GlassFill,
                             contentColor = TextPrimary
                         ),
                         shape = RoundedCornerShape(16.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, GlassBorder)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.action_create_simple_alarm, wakeStr),
-                            style = MaterialTheme.typography.bodyMedium.copy(color = PrimaryLavender)
+                        border = androidx.compose.foundation.BorderStroke(
+                            width = if (isSimpleArmed) 1.5.dp else 1.dp,
+                            color = if (isSimpleArmed) Color(0xFF34D399).copy(alpha = 0.70f) else GlassBorder
                         )
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = stringResource(R.string.action_create_simple_alarm, wakeStr),
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = if (isSimpleArmed) Color(0xFF34D399) else PrimaryLavender,
+                                    fontWeight = if (isSimpleArmed) FontWeight.Bold else FontWeight.Normal
+                                )
+                            )
+                            if (isSimpleArmed) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = stringResource(R.string.badge_option_armed),
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = Color(0xFF34D399),
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+                            }
+                        }
                     }
                 }
             }

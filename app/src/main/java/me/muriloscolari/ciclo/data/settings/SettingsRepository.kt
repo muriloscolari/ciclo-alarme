@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -19,6 +20,19 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "ciclo_settings")
+
+data class ActiveAlarmState(
+    val triggerTimeMillis: Long,
+    val wakeHour: Int,
+    val wakeMinute: Int,
+    val label: String,
+    val cycles: Int,
+    val isSimple: Boolean,
+    val engine: AlarmEngine,
+    val clockPackage: String? = null,
+    val sunriseEnabled: Boolean = false,
+    val sunriseLeadMinutes: Int = 0
+)
 
 data class UserSettings(
     val sleepSettings: SleepSettings = SleepSettings(),
@@ -34,7 +48,8 @@ data class UserSettings(
     val gentleWakeEnabled: Boolean = true,
     val sunriseEnabled: Boolean = true,
     val sunriseLeadTimeMinutes: Int = 5,
-    val customRingtoneUri: String? = null
+    val customRingtoneUri: String? = null,
+    val activeAlarm: ActiveAlarmState? = null
 )
 
 enum class AlarmEngine {
@@ -72,6 +87,16 @@ class SettingsRepository @Inject constructor(
         val SUNRISE_ENABLED = booleanPreferencesKey("sunrise_enabled")
         val SUNRISE_LEAD_TIME_MINUTES = intPreferencesKey("sunrise_lead_time_minutes")
         val CUSTOM_RINGTONE_URI = stringPreferencesKey("custom_ringtone_uri")
+        val ACTIVE_ALARM_TRIGGER = longPreferencesKey("active_alarm_trigger")
+        val ACTIVE_ALARM_HOUR = intPreferencesKey("active_alarm_hour")
+        val ACTIVE_ALARM_MINUTE = intPreferencesKey("active_alarm_minute")
+        val ACTIVE_ALARM_LABEL = stringPreferencesKey("active_alarm_label")
+        val ACTIVE_ALARM_CYCLES = intPreferencesKey("active_alarm_cycles")
+        val ACTIVE_ALARM_IS_SIMPLE = booleanPreferencesKey("active_alarm_is_simple")
+        val ACTIVE_ALARM_ENGINE = stringPreferencesKey("active_alarm_engine")
+        val ACTIVE_ALARM_CLOCK_PKG = stringPreferencesKey("active_alarm_clock_pkg")
+        val ACTIVE_ALARM_SUNRISE_ENABLED = booleanPreferencesKey("active_alarm_sunrise_enabled")
+        val ACTIVE_ALARM_SUNRISE_LEAD = intPreferencesKey("active_alarm_sunrise_lead")
     }
 
     val settingsFlow: Flow<UserSettings> = context.dataStore.data
@@ -109,6 +134,26 @@ class SettingsRepository @Inject constructor(
             val sunriseLeadTime = prefs[Keys.SUNRISE_LEAD_TIME_MINUTES] ?: 5
             val customRingtone = prefs[Keys.CUSTOM_RINGTONE_URI]
 
+            val activeTrigger = prefs[Keys.ACTIVE_ALARM_TRIGGER]
+            val activeAlarm = if (activeTrigger != null && activeTrigger > 0L) {
+                val activeEngineStr = prefs[Keys.ACTIVE_ALARM_ENGINE] ?: AlarmEngine.INTERNAL.name
+                val activeEngine = runCatching { AlarmEngine.valueOf(activeEngineStr) }.getOrDefault(AlarmEngine.INTERNAL)
+                ActiveAlarmState(
+                    triggerTimeMillis = activeTrigger,
+                    wakeHour = prefs[Keys.ACTIVE_ALARM_HOUR] ?: 0,
+                    wakeMinute = prefs[Keys.ACTIVE_ALARM_MINUTE] ?: 0,
+                    label = prefs[Keys.ACTIVE_ALARM_LABEL] ?: "",
+                    cycles = prefs[Keys.ACTIVE_ALARM_CYCLES] ?: 5,
+                    isSimple = prefs[Keys.ACTIVE_ALARM_IS_SIMPLE] ?: false,
+                    engine = activeEngine,
+                    clockPackage = prefs[Keys.ACTIVE_ALARM_CLOCK_PKG],
+                    sunriseEnabled = prefs[Keys.ACTIVE_ALARM_SUNRISE_ENABLED] ?: false,
+                    sunriseLeadMinutes = prefs[Keys.ACTIVE_ALARM_SUNRISE_LEAD] ?: 5
+                )
+            } else {
+                null
+            }
+
             UserSettings(
                 sleepSettings = SleepSettings(
                     cycleMinutes = cycleMinutes.coerceIn(90, 120),
@@ -130,7 +175,8 @@ class SettingsRepository @Inject constructor(
                 gentleWakeEnabled = gentleWake,
                 sunriseEnabled = sunrise,
                 sunriseLeadTimeMinutes = sunriseLeadTime.coerceIn(1, 30),
-                customRingtoneUri = customRingtone
+                customRingtoneUri = customRingtone,
+                activeAlarm = activeAlarm
             )
         }
 
@@ -204,6 +250,40 @@ class SettingsRepository @Inject constructor(
             } else {
                 it.remove(Keys.CUSTOM_RINGTONE_URI)
             }
+        }
+    }
+
+    suspend fun setActiveAlarm(alarm: ActiveAlarmState) {
+        context.dataStore.edit {
+            it[Keys.ACTIVE_ALARM_TRIGGER] = alarm.triggerTimeMillis
+            it[Keys.ACTIVE_ALARM_HOUR] = alarm.wakeHour
+            it[Keys.ACTIVE_ALARM_MINUTE] = alarm.wakeMinute
+            it[Keys.ACTIVE_ALARM_LABEL] = alarm.label
+            it[Keys.ACTIVE_ALARM_CYCLES] = alarm.cycles
+            it[Keys.ACTIVE_ALARM_IS_SIMPLE] = alarm.isSimple
+            it[Keys.ACTIVE_ALARM_ENGINE] = alarm.engine.name
+            if (alarm.clockPackage != null) {
+                it[Keys.ACTIVE_ALARM_CLOCK_PKG] = alarm.clockPackage
+            } else {
+                it.remove(Keys.ACTIVE_ALARM_CLOCK_PKG)
+            }
+            it[Keys.ACTIVE_ALARM_SUNRISE_ENABLED] = alarm.sunriseEnabled
+            it[Keys.ACTIVE_ALARM_SUNRISE_LEAD] = alarm.sunriseLeadMinutes
+        }
+    }
+
+    suspend fun clearActiveAlarm() {
+        context.dataStore.edit {
+            it.remove(Keys.ACTIVE_ALARM_TRIGGER)
+            it.remove(Keys.ACTIVE_ALARM_HOUR)
+            it.remove(Keys.ACTIVE_ALARM_MINUTE)
+            it.remove(Keys.ACTIVE_ALARM_LABEL)
+            it.remove(Keys.ACTIVE_ALARM_CYCLES)
+            it.remove(Keys.ACTIVE_ALARM_IS_SIMPLE)
+            it.remove(Keys.ACTIVE_ALARM_ENGINE)
+            it.remove(Keys.ACTIVE_ALARM_CLOCK_PKG)
+            it.remove(Keys.ACTIVE_ALARM_SUNRISE_ENABLED)
+            it.remove(Keys.ACTIVE_ALARM_SUNRISE_LEAD)
         }
     }
 

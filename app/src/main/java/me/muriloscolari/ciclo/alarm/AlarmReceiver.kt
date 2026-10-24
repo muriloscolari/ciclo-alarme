@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import me.muriloscolari.ciclo.data.alarm.ActiveAlarmRepository
 import me.muriloscolari.ciclo.data.settings.SettingsRepository
 import javax.inject.Inject
 
@@ -20,6 +21,9 @@ class AlarmReceiver : BroadcastReceiver() {
 
     @Inject
     lateinit var settingsRepository: SettingsRepository
+
+    @Inject
+    lateinit var activeAlarmRepository: ActiveAlarmRepository
 
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action ?: return
@@ -85,6 +89,16 @@ class AlarmReceiver : BroadcastReceiver() {
                     setPackage(context.packageName)
                 }
                 context.sendBroadcast(closeIntent)
+
+                val pendingResult = goAsync()
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        settingsRepository.clearActiveAlarm()
+                        activeAlarmRepository.cleanupExpired(System.currentTimeMillis() + 60000L)
+                    } finally {
+                        pendingResult.finish()
+                    }
+                }
             }
 
             InternalAlarmScheduler.ACTION_SNOOZE_ALARM -> {

@@ -3,6 +3,8 @@
 # 1. Entidades de Banco de Dados Room
 -keep class me.muriloscolari.ciclo.data.history.AlarmHistoryEntity { *; }
 -keep interface me.muriloscolari.ciclo.data.history.AlarmHistoryDao { *; }
+-keep class me.muriloscolari.ciclo.data.alarm.ActiveAlarmEntity { *; }
+-keep interface me.muriloscolari.ciclo.data.alarm.ActiveAlarmDao { *; }
 -keep class * extends androidx.room.RoomDatabase { *; }
 -dontwarn androidx.room.**
 

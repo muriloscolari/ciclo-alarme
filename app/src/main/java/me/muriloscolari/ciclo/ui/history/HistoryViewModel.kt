@@ -16,8 +16,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import me.muriloscolari.ciclo.alarm.AlarmScheduleResult
 import me.muriloscolari.ciclo.alarm.CicloAlarmManager
+import me.muriloscolari.ciclo.data.alarm.ActiveAlarmEntity
+import me.muriloscolari.ciclo.data.alarm.ActiveAlarmRepository
 import me.muriloscolari.ciclo.data.history.AlarmHistoryEntity
 import me.muriloscolari.ciclo.data.history.HistoryRepository
+import me.muriloscolari.ciclo.data.settings.ActiveAlarmState
+import me.muriloscolari.ciclo.data.settings.AlarmEngine
 import me.muriloscolari.ciclo.data.settings.SettingsRepository
 import java.time.Instant
 import java.time.LocalDate
@@ -44,6 +48,7 @@ sealed interface HistoryUiEvent {
 class HistoryViewModel @Inject constructor(
     private val historyRepository: HistoryRepository,
     private val settingsRepository: SettingsRepository,
+    private val activeAlarmRepository: ActiveAlarmRepository,
     private val cicloAlarmManager: CicloAlarmManager
 ) : ViewModel() {
 
@@ -162,6 +167,38 @@ class HistoryViewModel @Inject constructor(
                             wakeTimeMillis = triggerMillis
                         )
                     )
+
+                    // Atualiza o alarme ativo nas configurações
+                    val activeState = ActiveAlarmState(
+                        triggerTimeMillis = triggerMillis,
+                        wakeHour = entry.wakeHour,
+                        wakeMinute = entry.wakeMinute,
+                        label = label,
+                        cycles = entry.cycles,
+                        isSimple = entry.mode == "SIMPLE",
+                        engine = settings.alarmEngine,
+                        clockPackage = if (settings.alarmEngine == AlarmEngine.NATIVE) cicloAlarmManager.resolvedClockPackage() else null,
+                        sunriseEnabled = settings.alarmEngine == AlarmEngine.INTERNAL && settings.sunriseEnabled,
+                        sunriseLeadMinutes = settings.sunriseLeadTimeMinutes
+                    )
+                    settingsRepository.setActiveAlarm(activeState)
+
+                    // Salva no banco de dados de alarmes ativos
+                    activeAlarmRepository.recordActiveAlarm(
+                        ActiveAlarmEntity(
+                            triggerTimeMillis = triggerMillis,
+                            wakeHour = entry.wakeHour,
+                            wakeMinute = entry.wakeMinute,
+                            label = label,
+                            cycles = entry.cycles,
+                            isSimple = entry.mode == "SIMPLE",
+                            engine = settings.alarmEngine.name,
+                            clockPackage = if (settings.alarmEngine == AlarmEngine.NATIVE) cicloAlarmManager.resolvedClockPackage() else null,
+                            sunriseEnabled = settings.alarmEngine == AlarmEngine.INTERNAL && settings.sunriseEnabled,
+                            sunriseLeadMinutes = settings.sunriseLeadTimeMinutes
+                        )
+                    )
+
                     _events.emit(HistoryUiEvent.ShowSnackbar(successMsg))
                 }
                 is AlarmScheduleResult.NoClockApp -> {

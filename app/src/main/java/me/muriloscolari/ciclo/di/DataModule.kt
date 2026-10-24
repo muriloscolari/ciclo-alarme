@@ -7,6 +7,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import me.muriloscolari.ciclo.data.alarm.ActiveAlarmDao
 import me.muriloscolari.ciclo.data.history.AlarmHistoryDao
 import me.muriloscolari.ciclo.data.history.CicloDatabase
 import java.time.Clock
@@ -32,6 +33,12 @@ object DataModule {
     @Singleton
     fun provideAlarmHistoryDao(database: CicloDatabase): AlarmHistoryDao {
         return database.alarmHistoryDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideActiveAlarmDao(database: CicloDatabase): ActiveAlarmDao {
+        return database.activeAlarmDao()
     }
 
     @Provides

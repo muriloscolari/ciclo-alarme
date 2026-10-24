@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Alarm
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.NightlightRound
 import androidx.compose.material.icons.rounded.Settings
@@ -30,6 +31,7 @@ import dev.chrisbanes.haze.HazeState
 
 enum class NavigationTab(val route: String) {
     CALCULATE("calculate"),
+    ALARMS("alarms"),
     HISTORY("history"),
     SETTINGS("settings")
 }
@@ -39,13 +41,14 @@ fun GlassNavigationBar(
     currentTab: NavigationTab,
     onTabSelected: (NavigationTab) -> Unit,
     modifier: Modifier = Modifier,
-    hazeState: HazeState? = null
+    hazeState: HazeState? = null,
+    armedAlarmsCount: Int = 0
 ) {
     Box(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = 48.dp, vertical = 16.dp),
+            .padding(horizontal = 28.dp, vertical = 14.dp),
         contentAlignment = Alignment.Center
     ) {
         GlassSurface(
@@ -57,7 +60,7 @@ fun GlassNavigationBar(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                    .padding(horizontal = 6.dp, vertical = 6.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -65,6 +68,12 @@ fun GlassNavigationBar(
                     icon = Icons.Rounded.NightlightRound,
                     isSelected = currentTab == NavigationTab.CALCULATE,
                     onClick = { onTabSelected(NavigationTab.CALCULATE) }
+                )
+                NavigationItem(
+                    icon = Icons.Rounded.Alarm,
+                    isSelected = currentTab == NavigationTab.ALARMS,
+                    hasBadge = armedAlarmsCount > 0,
+                    onClick = { onTabSelected(NavigationTab.ALARMS) }
                 )
                 NavigationItem(
                     icon = Icons.Rounded.History,
@@ -85,6 +94,7 @@ fun GlassNavigationBar(
 private fun NavigationItem(
     icon: ImageVector,
     isSelected: Boolean,
+    hasBadge: Boolean = false,
     onClick: () -> Unit
 ) {
     val bgColor by animateColorAsState(
@@ -113,5 +123,16 @@ private fun NavigationItem(
             tint = iconColor,
             modifier = Modifier.size(24.dp)
         )
+
+        if (hasBadge) {
+            Box(
+                modifier = Modifier
+                    .size(7.dp)
+                    .align(Alignment.TopEnd)
+                    .padding(end = 10.dp, top = 6.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF34D399))
+            )
+        }
     }
 }

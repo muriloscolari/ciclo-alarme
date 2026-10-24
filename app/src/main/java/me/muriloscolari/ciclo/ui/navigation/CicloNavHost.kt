@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -22,6 +23,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
+import me.muriloscolari.ciclo.ui.armed.ArmedAlarmsScreen
+import me.muriloscolari.ciclo.ui.armed.ArmedAlarmsViewModel
 import me.muriloscolari.ciclo.ui.calculator.CalculatorScreen
 import me.muriloscolari.ciclo.ui.calculator.CalculatorViewModel
 import me.muriloscolari.ciclo.ui.designsystem.AuroraBackground
@@ -40,11 +43,14 @@ fun CicloNavHost(
 ) {
     val hazeState = remember { HazeState() }
     val snackbarHostState = remember { SnackbarHostState() }
+    val armedAlarmsViewModel = hiltViewModel<ArmedAlarmsViewModel>()
+    val armedAlarms by armedAlarmsViewModel.armedAlarms.collectAsState()
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: NavigationTab.CALCULATE.route
 
     val currentTab = when (currentRoute) {
+        NavigationTab.ALARMS.route -> NavigationTab.ALARMS
         NavigationTab.HISTORY.route -> NavigationTab.HISTORY
         NavigationTab.SETTINGS.route -> NavigationTab.SETTINGS
         else -> NavigationTab.CALCULATE
@@ -80,6 +86,13 @@ fun CicloNavHost(
                         )
                     }
 
+                    composable(NavigationTab.ALARMS.route) {
+                        ArmedAlarmsScreen(
+                            viewModel = armedAlarmsViewModel,
+                            snackbarHostState = snackbarHostState
+                        )
+                    }
+
                     composable(NavigationTab.HISTORY.route) {
                         val viewModel = hiltViewModel<HistoryViewModel>()
                         HistoryScreen(
@@ -111,6 +124,7 @@ fun CicloNavHost(
                         }
                     },
                     hazeState = hazeState,
+                    armedAlarmsCount = armedAlarms.size,
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
             }

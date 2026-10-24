@@ -46,6 +46,7 @@ import java.time.format.DateTimeFormatter
 fun SleepOptionCard(
     option: SleepOption,
     mode: SleepMode = SleepMode.NOW,
+    isArmed: Boolean = false,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -84,15 +85,33 @@ fun SleepOptionCard(
         durationText
     )
 
+    val cardBackground = when {
+        isArmed -> Color(0x2234D399)
+        isRecommended -> Color(0x1EA78BFA)
+        else -> GlassFill
+    }
+
+    val cardBorderBrush = when {
+        isArmed -> null
+        isRecommended -> RecommendedCardBorder
+        else -> null
+    }
+
+    val cardBorderColor = when {
+        isArmed -> Color(0xFF34D399).copy(alpha = 0.70f)
+        !isRecommended -> GlassBorder
+        else -> null
+    }
+
     GlassSurface(
         modifier = modifier
             .fillMaxWidth()
             .alpha(cardAlpha),
         shape = RoundedCornerShape(26.dp),
-        backgroundColor = if (isRecommended) Color(0x1EA78BFA) else GlassFill,
-        borderStroke = if (!isRecommended) BorderStroke(1.dp, GlassBorder) else null,
-        borderBrush = if (isRecommended) RecommendedCardBorder else null,
-        borderWidth = if (isRecommended) 1.5.dp else 1.dp,
+        backgroundColor = cardBackground,
+        borderColor = cardBorderColor,
+        borderBrush = cardBorderBrush,
+        borderWidth = if (isArmed || isRecommended) 1.5.dp else 1.dp,
         onClick = if (isAvailable) onClick else null
     ) {
         Column(
@@ -100,21 +119,46 @@ fun SleepOptionCard(
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp, vertical = 20.dp)
         ) {
-            if (isRecommended) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(999.dp))
-                        .background(RecommendedGradient)
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
+            if (isArmed || isRecommended) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = stringResource(R.string.recommended_badge),
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            color = Color(0xFF130E26),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 11.sp
-                        )
-                    )
+                    if (isArmed) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(999.dp))
+                                .background(Color(0xFF34D399).copy(alpha = 0.25f))
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.badge_option_armed),
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = Color(0xFF34D399),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.sp
+                                )
+                            )
+                        }
+                    }
+
+                    if (isRecommended) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(999.dp))
+                                .background(RecommendedGradient)
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.recommended_badge),
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = Color(0xFF130E26),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.sp
+                                )
+                            )
+                        }
+                    }
                 }
                 Spacer(modifier = Modifier.height(10.dp))
             }
