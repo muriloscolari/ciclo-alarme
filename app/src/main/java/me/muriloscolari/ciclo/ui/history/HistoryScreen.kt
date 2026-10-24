@@ -63,7 +63,6 @@ import me.muriloscolari.ciclo.ui.designsystem.TextTertiary
 @Composable
 fun HistoryScreen(
     viewModel: HistoryViewModel,
-    hazeState: HazeState,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier
 ) {
@@ -132,7 +131,6 @@ fun HistoryScreen(
         Box(modifier = Modifier.padding(horizontal = 24.dp, vertical = 6.dp)) {
             GlassSurface(
                 shape = RoundedCornerShape(16.dp),
-                hazeState = hazeState,
                 backgroundColor = GlassFill,
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { viewModel.openNativeClock() }
@@ -241,7 +239,6 @@ fun HistoryScreen(
                     items(group.items, key = { it.id }) { item ->
                         HistoryItemCard(
                             item = item,
-                            hazeState = hazeState,
                             onRecreate = {
                                 viewModel.recreateAlarm(
                                     entry = item,
@@ -299,7 +296,6 @@ fun HistoryScreen(
 @Composable
 private fun HistoryItemCard(
     item: AlarmHistoryEntity,
-    hazeState: HazeState,
     onRecreate: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -312,7 +308,6 @@ private fun HistoryItemCard(
 
     GlassSurface(
         shape = RoundedCornerShape(20.dp),
-        hazeState = hazeState,
         backgroundColor = GlassFill,
         modifier = Modifier.fillMaxWidth()
     ) {

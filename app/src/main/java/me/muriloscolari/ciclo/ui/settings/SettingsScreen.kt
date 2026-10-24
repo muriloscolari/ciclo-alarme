@@ -52,7 +52,6 @@ import me.muriloscolari.ciclo.ui.designsystem.TextTertiary
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel,
-    hazeState: HazeState,
     modifier: Modifier = Modifier
 ) {
     val settings by viewModel.userSettings.collectAsState()
@@ -91,7 +90,6 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 GlassSurface(
                     shape = RoundedCornerShape(24.dp),
-                    hazeState = hazeState,
                     backgroundColor = GlassFill,
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -202,7 +200,6 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 GlassSurface(
                     shape = RoundedCornerShape(24.dp),
-                    hazeState = hazeState,
                     backgroundColor = GlassFill,
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -270,7 +267,6 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 GlassSurface(
                     shape = RoundedCornerShape(24.dp),
-                    hazeState = hazeState,
                     backgroundColor = GlassFill,
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -317,7 +313,6 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 GlassSurface(
                     shape = RoundedCornerShape(24.dp),
-                    hazeState = hazeState,
                     backgroundColor = GlassFill,
                     modifier = Modifier.fillMaxWidth()
                 ) {

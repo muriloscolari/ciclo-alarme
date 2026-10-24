@@ -60,7 +60,6 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun CalculatorScreen(
     viewModel: CalculatorViewModel,
-    hazeState: HazeState,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier
 ) {
@@ -139,7 +138,6 @@ fun CalculatorScreen(
             SegmentedPill(
                 selectedMode = uiState.selectedMode,
                 onModeSelected = { viewModel.onModeSelected(it) },
-                hazeState = hazeState,
                 labels = modeLabels
             )
         }
@@ -165,7 +163,6 @@ fun CalculatorScreen(
             ) {
                 GlassSurface(
                     shape = RoundedCornerShape(16.dp),
-                    hazeState = hazeState,
                     backgroundColor = GlassFill,
                     modifier = Modifier.fillMaxWidth(),
                     onClick = { showTimePicker = true }
@@ -231,8 +228,7 @@ fun CalculatorScreen(
             items(uiState.options) { option ->
                 SleepOptionCard(
                     option = option,
-                    onClick = { viewModel.onOptionClicked(option) },
-                    hazeState = hazeState
+                    onClick = { viewModel.onOptionClicked(option) }
                 )
             }
 

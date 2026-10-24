@@ -4,7 +4,6 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -50,19 +49,16 @@ fun CicloNavHost(
     }
 
     AuroraBackground(
-        modifier = modifier
-            .fillMaxSize()
-            .haze(state = hazeState)
+        modifier = modifier.fillMaxSize()
     ) {
         Scaffold(
             containerColor = Color.Transparent,
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
         ) { paddingValues ->
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
+                modifier = Modifier.fillMaxSize()
             ) {
+                // Conteúdo rolável / telas marcado com Modifier.haze para ser capturado pelo Haze
                 NavHost(
                     navController = navController,
                     startDestination = NavigationTab.CALCULATE.route,
@@ -70,13 +66,14 @@ fun CicloNavHost(
                     exitTransition = { ExitTransition.None },
                     popEnterTransition = { EnterTransition.None },
                     popExitTransition = { ExitTransition.None },
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .haze(state = hazeState)
                 ) {
                     composable(NavigationTab.CALCULATE.route) {
                         val viewModel = hiltViewModel<CalculatorViewModel>()
                         CalculatorScreen(
                             viewModel = viewModel,
-                            hazeState = hazeState,
                             snackbarHostState = snackbarHostState
                         )
                     }
@@ -85,7 +82,6 @@ fun CicloNavHost(
                         val viewModel = hiltViewModel<HistoryViewModel>()
                         HistoryScreen(
                             viewModel = viewModel,
-                            hazeState = hazeState,
                             snackbarHostState = snackbarHostState
                         )
                     }
@@ -93,13 +89,12 @@ fun CicloNavHost(
                     composable(NavigationTab.SETTINGS.route) {
                         val viewModel = hiltViewModel<SettingsViewModel>()
                         SettingsScreen(
-                            viewModel = viewModel,
-                            hazeState = hazeState
+                            viewModel = viewModel
                         )
                     }
                 }
 
-                // Barra de Navegação Inferior de Vidro Flutuante
+                // Barra de Navegação Inferior de Vidro Flutuante (aplica hazeChild sobre o NavHost)
                 GlassNavigationBar(
                     currentTab = currentTab,
                     onTabSelected = { tab ->

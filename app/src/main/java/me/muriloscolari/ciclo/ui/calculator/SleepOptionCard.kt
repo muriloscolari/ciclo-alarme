@@ -45,8 +45,7 @@ import java.time.format.DateTimeFormatter
 fun SleepOptionCard(
     option: SleepOption,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    hazeState: HazeState? = null
+    modifier: Modifier = Modifier
 ) {
     val isRecommended = option.isRecommended && option.isAvailable
     val isAvailable = option.isAvailable
@@ -85,7 +84,6 @@ fun SleepOptionCard(
             .fillMaxWidth()
             .alpha(cardAlpha),
         shape = RoundedCornerShape(26.dp),
-        hazeState = hazeState,
         backgroundColor = if (isRecommended) Color(0x1EA78BFA) else GlassFill,
         borderStroke = if (!isRecommended) BorderStroke(1.dp, GlassBorder) else null,
         borderBrush = if (isRecommended) RecommendedCardBorder else null,
