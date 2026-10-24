@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="cycles_count">
+        <item quantity="one">%1$d ciclo</item>
+        <item quantity="other">%1$d ciclos</item>
+    </plurals>
+
+    <plurals name="minutes_duration">
+        <item quantity="one">%1$d minuto</item>
+        <item quantity="other">%1$d minutos</item>
+    </plurals>
+
+    <plurals name="hours_duration">
+        <item quantity="one">%1$d hora</item>
+        <item quantity="other">%1$d horas</item>
+    </plurals>
+</resources>

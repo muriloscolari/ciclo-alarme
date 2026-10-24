@@ -1,4 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Ciclo</string>
+
+    <!-- Navegação -->
+    <string name="nav_calculate">Calcular</string>
+    <string name="nav_history">Histórico</string>
+    <string name="nav_settings">Ajustes</string>
+
+    <!-- Cabeçalho & Status -->
+    <string name="current_time_format">Agora são %1$s</string>
+    <string name="wake_up_at_label">Acorde às</string>
+    <string name="go_to_bed_at_label">Vá para a cama às</string>
+    <string name="fall_asleep_notice">Inclui %1$d min para pegar no sono</string>
+
+    <!-- Modos de cálculo -->
+    <string name="mode_sleep_now">Dormir agora</string>
+    <string name="mode_sleep_at">Vou dormir às</string>
+    <string name="mode_wake_at">Acordar às</string>
+
+    <!-- Cards de opções -->
+    <string name="recommended_badge">★ Recomendado</string>
+    <string name="cycle_and_duration_format">%1$s · %2$s de sono</string>
+    <string name="duration_hours_minutes">%1$dh%2$02d</string>
+    <string name="duration_only_hours">%1$dh00</string>
+    <string name="duration_only_minutes">%1$d min</string>
+    <string name="past_time_unavailable">Horário já passou</string>
+
+    <!-- Alarme Simples -->
+    <string name="simple_alarm_title">Alarme simples</string>
+    <string name="simple_alarm_desc">Não há tempo hábil para ciclos completos. Deseja criar um alarme simples para as %1$s?</string>
+    <string name="action_create_simple_alarm">Criar alarme simples às %1$s</string>
+
+    <!-- Confirmação de Alarme (Bottom Sheet) -->
+    <string name="confirm_alarm_title">Definir alarme às %1$s?</string>
+    <string name="confirm_alarm_summary_now">Se deitar agora, você acorda após %1$d ciclos (%2$s de sono).</string>
+    <string name="confirm_alarm_summary_bedtime">Deitando às %1$s, você acorda às %2$s com %3$d ciclos de sono.</string>
+    <string name="confirm_alarm_summary_wakeat">Para acordar às %1$s descansado, vá para a cama às %2$s (%3$d ciclos).</string>
+    <string name="confirm_alarm_duplicate_warning">⚠️ Você já enviou um alarme para as %1$s há %2$s. Deseja enviar novamente?</string>
+    <string name="confirm_alarm_action">Criar no Relógio</string>
+    <string name="action_cancel">Cancelar</string>
+
+    <!-- Rótulo do Alarme nativo -->
+    <string name="alarm_clock_label">💤 %1$d ciclos · Ciclo</string>
+    <string name="alarm_clock_label_simple">⏰ Despertador · Ciclo</string>
+
+    <!-- Feedback e Erros -->
+    <string name="feedback_alarm_sent">Alarme enviado ao aplicativo de Relógio!</string>
+    <string name="feedback_alarm_failed">Não foi possível criar o alarme: %1$s</string>
+    <string name="feedback_no_clock_app">Nenhum aplicativo de Relógio nativo compatível foi encontrado no dispositivo.</string>
+    <string name="action_open_clock">Abrir alarmes do Relógio</string>
+
+    <!-- Histórico -->
+    <string name="history_title">Histórico de Alarmes</string>
+    <string name="history_empty_title">Nenhum alarme recente</string>
+    <string name="history_empty_subtitle">Os alarmes que você criar aparecerão aqui para consulta e recriação rápida.</string>
+    <string name="history_today">Hoje</string>
+    <string name="history_yesterday">Ontem</string>
+    <string name="action_recreate_alarm">Criar de novo</string>
+    <string name="action_delete">Excluir</string>
+    <string name="action_undo">Desfazer</string>
+    <string name="history_item_deleted">Item removido do histórico.</string>
+    <string name="action_clear_all">Limpar tudo</string>
+    <string name="dialog_clear_history_title">Limpar histórico?</string>
+    <string name="dialog_clear_history_message">Esta ação removerá todos os registros locais do aplicativo. Os alarmes já criados no Relógio nativo permanecerão salvos nele.</string>
+    <string name="dialog_action_clear">Limpar</string>
+
+    <!-- Ajustes -->
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_section_sleep">Ciclos de Sono</string>
+    <string name="settings_cycle_duration_label">Duração do ciclo</string>
+    <string name="settings_cycle_duration_value">%1$d minutos</string>
+    <string name="settings_latency_label">Tempo para pegar no sono</string>
+    <string name="settings_latency_value">%1$d minutos</string>
+    <string name="settings_recommended_cycles_label">Ciclos recomendados</string>
+    <string name="settings_recommended_cycles_value">%1$d ciclos</string>
+
+    <string name="settings_section_alarm">Relógio Nativo</string>
+    <string name="settings_skip_ui_label">Salvar em segundo plano</string>
+    <string name="settings_skip_ui_desc">Tenta criar o alarme diretamente sem abrir a tela do Relógio (depende do fabricante).</string>
+    <string name="settings_vibrate_label">Vibrar ao despertar</string>
+
+    <string name="settings_section_appearance">Aparência</string>
+    <string name="settings_theme_label">Tema</string>
+    <string name="settings_theme_dark">Escuro</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_system">Padrão do sistema</string>
+    <string name="settings_blur_label">Efeitos de vidro e desfoque</string>
+    <string name="settings_blur_desc">Utiliza efeito frosted glass moderno (desative caso queira poupar bateria extra).</string>
+    <string name="settings_dynamic_colors_label">Cores do sistema (Material You)</string>
+
+    <string name="settings_section_about">Sobre</string>
+    <string name="settings_clock_detected_label">Relógio nativo detectado</string>
+    <string name="settings_clock_detected_none">Nenhum detectado</string>
+    <string name="settings_version_label">Versão do Ciclo</string>
+    <string name="settings_source_code_label">Código aberto no GitHub</string>
+    <string name="settings_license_label">Licença GPL-3.0</string>
+    <string name="settings_reset_button">Restaurar padrões</string>
+
+    <!-- Diálogo Seletor de Hora -->
+    <string name="time_picker_title">Escolha o horário</string>
+    <string name="time_picker_confirm">Confirmar</string>
 </resources>
